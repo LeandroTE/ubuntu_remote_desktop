@@ -1,0 +1,93 @@
+#Remove unwanted programs
+- name: Uninstall Firefox
+  become: yes
+  become_method: sudo
+  apt:
+    name: firefox
+    state: absent
+
+- name: Uninstall Thunderbird
+  become: yes
+  become_method: sudo
+  apt:
+    name: thunderbird
+    state: absent
+
+- name: Remove LibreOffice packages
+  become: yes
+  become_method: sudo
+  apt:
+    name:
+      - libreoffice*
+    state: absent
+
+#Install Programs
+
+#Google Chrome
+- name: Does the Google apt file exist?
+  command: test -f 
+  register: google_apt_exists
+  ignore_errors: True
+
+- name: Add Google Chrome key
+  shell: wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+  when: google_apt_exists.rc == 1
+
+- name: Add Google Chrome repository
+  become: yes
+  become_method: sudo
+  apt_repository:
+    repo: deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
+    state: present
+    filename: google-chrome
+  when: google_apt_exists.rc == 1
+
+- name: Install Google Chrome package
+  become: yes
+  become_method: sudo
+  apt:
+    name: google-chrome-stable
+    state: present
+  when: google_apt_exists.rc == 1
+
+#VScode and Gitkraken
+- name: Add Microsoft GPG key
+  become: yes
+  become_method: sudo
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Add Visual Studio Code repository
+  become: yes
+  become_method: sudo
+  apt_repository:
+    repo: deb [arch=amd64] http://packages.microsoft.com/repos/vscode stable main
+    state: present
+    filename: vscode
+
+- name: Install Visual Studio Code
+  become: yes
+  become_method: sudo
+  apt:
+    name:
+      - code
+    state: present
+
+#Install gitkraken
+- name: Download GitKraken package
+  get_url:
+    url: https://release.gitkraken.com/linux/gitkraken-amd64.deb
+    dest: /tmp/gitkraken.deb
+
+- name: Install GitKraken package
+  become: yes
+  become_method: sudo
+  command: dpkg -i /tmp/gitkraken.deb
+
+- name: Remove GitKraken package
+  become: yes
+  become_method: sudo
+  file:
+    path: /tmp/gitkraken.deb
+    state: absent

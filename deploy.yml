@@ -1,0 +1,12 @@
+- name: Ubuntu remote desktop
+  hosts: 
+    - ubuntu
+
+
+  roles:
+    - base
+    - software
+  become: "{{ become | default('yes') }}"
+
+
+

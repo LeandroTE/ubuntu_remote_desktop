@@ -1,0 +1,47 @@
+- name: Test ssh connection to the server
+  ping:
+    
+- name: Update & upgrade repository
+  apt:
+    update_cache: yes
+    upgrade: yes
+    autoremove: yes
+
+- name: Install Ubuntu Desktop
+  apt:
+    name: ubuntu-desktop
+    state: latest
+    update_cache: true
+
+
+- name: Install XRDP
+  apt:
+    name: xrdp
+    state: latest
+    update_cache: true
+
+
+- name: Create user
+  user:
+    name: ubuntu
+    password: "{{ 'mypassword' | password_hash('sha512') }}"
+    state: present
+    shell: /bin/bash
+    groups: sudo    
+
+- name: Edit XRDP file to get full gnome
+  become: yes
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: |
+      sed -i '4 i\export XDG_CURRENT_DESKTOP=ubuntu:GNOME' /etc/xrdp/startwm.sh
+      sed -i '4 i\export GNOME_SHELL_SESSION_MODE=ubuntu' /etc/xrdp/startwm.sh
+      sed -i '4 i\export DESKTOP_SESSION=ubuntu' /etc/xrdp/startwm.sh   
+
+
+- name: Restart xrdp.service
+  become: yes
+  become_method: sudo
+  systemd:
+    name: xrdp.service
+    state: restarted

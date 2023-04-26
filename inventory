@@ -1,0 +1,11 @@
+[ubuntu]
+#IP Address  
+
+[ubuntu:vars]
+ansible_user = ubuntu
+#Change corresponding to the user o the VM
+
+
+
+
+
